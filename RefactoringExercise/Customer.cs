@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace RefactoringExercise
 {
     public class Customer
     {
-        private List<Rental> _rentals = new List<Rental>();
+        private readonly List<Rental> _rentals = new List<Rental>();
+        private int _frequentRenterPoints;
 
         public Customer(string name)
         {
@@ -24,37 +23,36 @@ namespace RefactoringExercise
 
         public String CreateStatement()
         {
-            FrequentRenterPoints frequentRenterPoints = new FrequentRenterPoints();
-            StringBuilder result = new StringBuilder("Rental Record for " + Name + "\n");
-            double totalAmount = AllRentals(frequentRenterPoints, _rentals, result);
-            GetFooterLines(result, totalAmount, frequentRenterPoints.Get());
-            return result.ToString();
+            StringBuilder statement = new StringBuilder("Rental Record for " + Name + "\n");
+            double totalAmount = GetCostForAllRentalsAndCreateStatement(statement);
+            AppendFooterLines(statement, totalAmount, _frequentRenterPoints);
+            return statement.ToString();
         }
 
-        private double AllRentals(FrequentRenterPoints frequentRenterPoints, IEnumerable<Rental> rentals, StringBuilder result)
+        private double GetCostForAllRentalsAndCreateStatement(StringBuilder statementStringBuilder)
         {
             double totalAmount = 0;
             foreach (var rental in _rentals)
             {
-                totalAmount += OnRental(frequentRenterPoints, result, rental);
+                totalAmount += OnRental(statementStringBuilder, rental);
             }
 
             return totalAmount;
         }
 
-        private double OnRental(FrequentRenterPoints frequentRenterPoints, StringBuilder result, Rental rental)
+        private double OnRental(StringBuilder statement, Rental rental)
         {
             double thisAmount = DetermineAmountsForEachLine(rental);
-            frequentRenterPoints.Add(rental);
-            ShowFiguresForThisRental(result, rental, thisAmount);
+            AddFrequentRenterPoints(rental);
+            ShowFiguresForThisRental(statement, rental, thisAmount);
             return thisAmount;
         }
 
-        private void GetFooterLines(StringBuilder result, double totalAmount, int frequentRenterPoints)
+        private void AppendFooterLines(StringBuilder statement, double totalAmount, int frequentRenterPoints)
         {
             // add footer lines
-            result.Append("Amount owed is " + totalAmount + "\n");
-            result.Append("You earned " + frequentRenterPoints + " frequent renter points");
+            statement.Append("Amount owed is " + totalAmount + "\n");
+            statement.Append("You earned " + frequentRenterPoints + " frequent renter points");
         }
 
         private void ShowFiguresForThisRental(StringBuilder result, Rental each, double thisAmount)
@@ -87,6 +85,26 @@ namespace RefactoringExercise
             }
             return thisAmount;
         }
+
+        private void AddFrequentRenterPoints(Rental rental)
+        {
+            _frequentRenterPoints += CalculateFrequentRenterPoints(rental);
+        }
+
+
+        private int CalculateFrequentRenterPoints(Rental each)
+        {
+            // add frequent renter points
+            int frequentRenterPoints = 1;
+            // add bonus for a two day new release rental
+            if ((each.Movie.PriceCode == Movie.NEW_RELEASE) && each.DaysRented > 1)
+            {
+                frequentRenterPoints++;
+            }
+            return frequentRenterPoints;
+        }
+
     }
+  
 
 }

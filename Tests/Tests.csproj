@@ -42,8 +42,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CustomerTests.cs" />
     <Compile Include="MovieTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RentalTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
